@@ -1,0 +1,5 @@
+tipo,nombre,descripcion
+1,Total,"Todas las interrupciones, sin importar la causa u origen."
+2,Total sin ICE,"Excluye las originadas por falta de suministro o fallas en la red de transmisión, falta de abastecimiento de generación, salidas por frecuencia, estabilidad, etc."
+3,Total sin ICE ni externas,"Excluye además las causas externas: influencias ambientales, de la actividad humana y de redes eléctricas externas (art. 70, AR-NT-SUCAL)."
+4,Total sin exentas,Excluye las interrupciones exentas de compensación.

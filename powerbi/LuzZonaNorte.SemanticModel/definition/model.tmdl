@@ -1,0 +1,21 @@
+model Model
+	culture: es-ES
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	discourageImplicitMeasures
+	sourceQueryCulture: es-ES
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["Servidor", "BaseDatos", "Periodo", "Empresa", "Tipo", "Circuito", "Distrito", "Planta", "Continuidad", "Lluvia", "Generación"]
+
+ref table Periodo
+ref table Empresa
+ref table Tipo
+ref table Circuito
+ref table Distrito
+ref table Planta
+ref table Continuidad
+ref table Lluvia
+ref table 'Generación'
+ref table Medidas

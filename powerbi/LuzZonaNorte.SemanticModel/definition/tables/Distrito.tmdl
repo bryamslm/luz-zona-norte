@@ -1,0 +1,56 @@
+table Distrito
+	lineageTag: 41c80386-29a4-5d20-bbae-f16e1ca00f25
+
+	column cod_distrito
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: ba493c30-532b-5583-a94f-f721e721e3e6
+		summarizeBy: none
+		sourceColumn: cod_distrito
+
+		annotation SummarizationSetBy = Automatic
+
+	column provincia
+		dataType: string
+		lineageTag: b9443cc8-033c-5d0e-8254-890455a20ec4
+		summarizeBy: none
+		sourceColumn: provincia
+
+		annotation SummarizationSetBy = Automatic
+
+	column canton
+		dataType: string
+		lineageTag: 963b7814-f331-5c61-a13e-fde7be509092
+		summarizeBy: none
+		sourceColumn: canton
+
+		annotation SummarizationSetBy = Automatic
+
+	column distrito
+		dataType: string
+		lineageTag: 4d2fc84b-3beb-59f6-ad9b-c57385a17d15
+		summarizeBy: none
+		sourceColumn: distrito
+
+		annotation SummarizationSetBy = Automatic
+
+	column pct_en_concesion
+		dataType: double
+		formatString: 0%
+		lineageTag: 1eed5e60-a648-5d9e-abe9-7c68d5d3aec9
+		summarizeBy: none
+		sourceColumn: pct_en_concesion
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Distrito = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Servidor, BaseDatos),
+				    Tabla = Source{[Schema="dw",Item="dim_distrito"]}[Data]
+				in
+				    Tabla
+
+	annotation PBI_ResultType = Table

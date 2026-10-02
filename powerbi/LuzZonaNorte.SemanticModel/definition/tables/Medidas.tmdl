@@ -1,0 +1,208 @@
+/// Todas las medidas del reporte, agrupadas por pagina en carpetas.
+table Medidas
+	lineageTag: 82efce93-0f96-5917-bfd8-919554a6a9ce
+
+	/// Abonados promedio de los periodos que la empresa reportó.
+	measure 'Abonados promedio' =
+			AVERAGEX(VALUES('Continuidad'[id_periodo]),
+			    CALCULATE(SUM('Continuidad'[abonados]), 'Continuidad'[tipo] = 1))
+		formatString: #,0
+		displayFolder: Continuidad
+		lineageTag: e5c539a6-7795-52a4-bd91-ef75b80e4595
+
+	/// Frecuencia promedio de interrupciones por abonado en el año (todas las causas).
+	measure FPI =
+			VAR t = SUMMARIZE('Continuidad', 'Continuidad'[cod_empresa], 'Periodo'[anio])
+			VAR x = ADDCOLUMNS(t,
+			    "@i", CALCULATE(SUM('Continuidad'[fpi_x_abon]), 'Continuidad'[tipo] = 1),
+			    "@a", CALCULATE([Abonados promedio]))
+			RETURN DIVIDE(SUMX(x, [@i]), SUMX(x, [@a]))
+		formatString: #,0.00
+		displayFolder: Continuidad
+		lineageTag: dd09520f-a291-556f-b549-16e249630b7f
+
+	/// Horas sin servicio por abonado en el año (todas las causas).
+	measure 'DPIR h' =
+			VAR t = SUMMARIZE('Continuidad', 'Continuidad'[cod_empresa], 'Periodo'[anio])
+			VAR x = ADDCOLUMNS(t,
+			    "@i", CALCULATE(SUM('Continuidad'[dpir_x_abon]), 'Continuidad'[tipo] = 1),
+			    "@a", CALCULATE([Abonados promedio]))
+			RETURN DIVIDE(SUMX(x, [@i]), SUMX(x, [@a]))
+		formatString: #,0.00
+		displayFolder: Continuidad
+		lineageTag: 5849f10a-2af3-5d20-b37e-c76f3d56ec0b
+
+	/// Tipo 2: excluye fallas de transmisión y generación (ICE).
+	measure 'FPI sin ICE' =
+			VAR t = SUMMARIZE('Continuidad', 'Continuidad'[cod_empresa], 'Periodo'[anio])
+			VAR x = ADDCOLUMNS(t,
+			    "@i", CALCULATE(SUM('Continuidad'[fpi_x_abon]), 'Continuidad'[tipo] = 2),
+			    "@a", CALCULATE([Abonados promedio]))
+			RETURN DIVIDE(SUMX(x, [@i]), SUMX(x, [@a]))
+		formatString: #,0.00
+		displayFolder: Continuidad
+		lineageTag: f2838d37-3534-5e0c-9970-2297a58867b7
+
+	/// Tipo 3: excluye ICE y causas externas. Lo que depende de la red de la empresa.
+	measure 'FPI internas' =
+			VAR t = SUMMARIZE('Continuidad', 'Continuidad'[cod_empresa], 'Periodo'[anio])
+			VAR x = ADDCOLUMNS(t,
+			    "@i", CALCULATE(SUM('Continuidad'[fpi_x_abon]), 'Continuidad'[tipo] = 3),
+			    "@a", CALCULATE([Abonados promedio]))
+			RETURN DIVIDE(SUMX(x, [@i]), SUMX(x, [@a]))
+		formatString: #,0.00
+		displayFolder: Continuidad
+		lineageTag: d4f40b1e-a6d8-50e6-a441-3d05a6673e72
+
+	/// Interrupciones por fallas de transmisión o generación.
+	measure 'FPI por ICE' = [FPI] - [FPI sin ICE]
+		formatString: #,0.00
+		displayFolder: Continuidad
+		lineageTag: 025795aa-555f-5093-a839-67ec5c497a22
+
+	/// Interrupciones por influencias ambientales, actividad humana o redes externas.
+	measure 'FPI externas' = [FPI sin ICE] - [FPI internas]
+		formatString: #,0.00
+		displayFolder: Continuidad
+		lineageTag: 6f3b41d6-3f46-5d6d-8c6d-c11435c687af
+
+	/// Peso de las causas externas en el total.
+	measure '% externas' = DIVIDE([FPI externas], [FPI])
+		formatString: 0.0%
+		displayFolder: Continuidad
+		lineageTag: 25526643-50d6-507b-926b-86552bef3c70
+
+	/// Total de veces que un abonado quedó sin luz. Dónde pesa más el problema.
+	measure 'Interrupciones (abonado-vez)' = CALCULATE(SUM('Continuidad'[fpi_x_abon]), 'Continuidad'[tipo] = 1)
+		formatString: #,0
+		displayFolder: Continuidad
+		lineageTag: c59dc39c-f5be-53a3-81e7-f9746d003837
+
+	/// Promedio de las ocho distribuidoras, ponderado por abonados.
+	measure 'FPI nacional' = CALCULATE([FPI], REMOVEFILTERS('Empresa'), REMOVEFILTERS('Circuito'))
+		formatString: #,0.00
+		displayFolder: Continuidad
+		lineageTag: 99eaaeb4-218b-5b16-8dce-48268c264343
+
+	/// FPI de Coopelesca.
+	measure 'FPI Coopelesca' = CALCULATE([FPI], 'Empresa'[cod_empresa] = "COOPELESCA")
+		formatString: #,0.00
+		displayFolder: Coopelesca
+		lineageTag: 17268c9d-0487-52b1-bfa2-31584ce7c747
+
+	/// Interrupciones de causa externa en Coopelesca.
+	measure 'FPI externas Coopelesca' = CALCULATE([FPI externas], 'Empresa'[cod_empresa] = "COOPELESCA")
+		formatString: #,0.00
+		displayFolder: Coopelesca
+		lineageTag: fa432389-b60f-5885-afd2-b32dc3d6d1a1
+
+	/// Interrupciones de causa interna en Coopelesca.
+	measure 'FPI internas Coopelesca' = CALCULATE([FPI internas], 'Empresa'[cod_empresa] = "COOPELESCA")
+		formatString: #,0.00
+		displayFolder: Coopelesca
+		lineageTag: 81a0ab0b-4620-57a6-b058-24da0831e64b
+
+	/// Interrupciones abonado-vez en los circuitos de Coopelesca.
+	measure 'Interrupciones Coopelesca' = CALCULATE([Interrupciones (abonado-vez)], 'Empresa'[cod_empresa] = "COOPELESCA")
+		formatString: #,0
+		displayFolder: Coopelesca
+		lineageTag: 892a08f7-e62b-57f7-8e61-400934208009
+
+	/// DPIR de Coopelesca.
+	measure 'DPIR Coopelesca h' = CALCULATE([DPIR h], 'Empresa'[cod_empresa] = "COOPELESCA")
+		formatString: #,0.00
+		displayFolder: Coopelesca
+		lineageTag: 22886c8d-57b3-5d23-846a-f0d36e13ee0e
+
+	/// FPI del último año publicado por ARESEP.
+	measure 'FPI Coopelesca (último año)' =
+			VAR y = INT(CALCULATE(MAX('Continuidad'[id_periodo]), REMOVEFILTERS('Periodo')) / 100)
+			RETURN CALCULATE([FPI Coopelesca], 'Periodo'[anio] = y)
+		formatString: #,0.00
+		displayFolder: Coopelesca
+		lineageTag: 9e5c532f-d1d2-5ad4-8d00-810b8cf4c8d1
+
+	/// Horas sin luz por abonado en el último año publicado.
+	measure 'DPIR Coopelesca h (último año)' =
+			VAR y = INT(CALCULATE(MAX('Continuidad'[id_periodo]), REMOVEFILTERS('Periodo')) / 100)
+			RETURN CALCULATE([DPIR Coopelesca h], 'Periodo'[anio] = y)
+		formatString: #,0.00
+		displayFolder: Coopelesca
+		lineageTag: b6e8bc9e-cfee-5f91-937a-8421a1c18cf4
+
+	/// Peso de las causas externas en Coopelesca, último año.
+	measure '% externas Coopelesca (último año)' =
+			VAR y = INT(CALCULATE(MAX('Continuidad'[id_periodo]), REMOVEFILTERS('Periodo')) / 100)
+			RETURN CALCULATE([% externas], 'Empresa'[cod_empresa] = "COOPELESCA", 'Periodo'[anio] = y)
+		formatString: 0.0%
+		displayFolder: Coopelesca
+		lineageTag: 8985483f-65e7-5636-be4f-58f5482378e7
+
+	/// Interrupciones por causas internas en Coopelesca, último año.
+	measure 'FPI internas Coopelesca (último año)' =
+			VAR y = INT(CALCULATE(MAX('Continuidad'[id_periodo]), REMOVEFILTERS('Periodo')) / 100)
+			RETURN CALCULATE([FPI internas Coopelesca], 'Periodo'[anio] = y)
+		formatString: #,0.00
+		displayFolder: Coopelesca
+		lineageTag: 44382496-ba1d-51f0-b846-083c2c1d00e3
+
+	/// FPI nacional del último año publicado.
+	measure 'FPI nacional (último año)' =
+			VAR y = INT(CALCULATE(MAX('Continuidad'[id_periodo]), REMOVEFILTERS('Periodo')) / 100)
+			RETURN CALCULATE([FPI nacional], 'Periodo'[anio] = y)
+		formatString: #,0.00
+		displayFolder: Coopelesca
+		lineageTag: 9c77326e-578a-5380-94d0-9d3db99aa9e9
+
+	/// Interrupciones abonado-vez del último año publicado.
+	measure 'Interrupciones Coopelesca (último año)' =
+			VAR y = INT(CALCULATE(MAX('Continuidad'[id_periodo]), REMOVEFILTERS('Periodo')) / 100)
+			RETURN CALCULATE([Interrupciones Coopelesca], 'Periodo'[anio] = y)
+		formatString: #,0
+		displayFolder: Coopelesca
+		lineageTag: 7174772b-5e30-5257-9d52-cf5b87d36f2d
+
+	/// Solo periodos mensuales: un valor semestral (2020-2022) no es comparable con un mes.
+	measure 'FPI externas Coopelesca (mensual)' = IF(CALCULATE(MAX('Continuidad'[meses]), 'Empresa'[cod_empresa] = "COOPELESCA") = 1, [FPI externas Coopelesca])
+		formatString: #,0.00
+		displayFolder: Coopelesca
+		lineageTag: 206344b2-576b-5305-a73d-12a93138ba3c
+
+	/// Lluvia anual de la zona, promedio de los años seleccionados con datos.
+	measure 'Lluvia anual promedio mm' = AVERAGEX(VALUES('Periodo'[anio]), [Lluvia zona mm])
+		formatString: #,0
+		displayFolder: Clima y generación
+		lineageTag: 7a8d3542-21df-5e87-9a4a-53fa4bf75904
+
+	/// Lluvia promedio de los distritos de la concesión de Coopelesca (ERA5, Open-Meteo).
+	measure 'Lluvia zona mm' = AVERAGEX(VALUES('Distrito'[cod_distrito]), CALCULATE(SUM('Lluvia'[mm_era5])))
+		formatString: #,0
+		displayFolder: Clima y generación
+		lineageTag: 9d6b8f7f-f042-5ed0-a0d3-f84b0821320b
+
+	/// Contraste: NASA POWER. Subestima la lluvia de la zona; no se usa en el análisis.
+	measure 'Lluvia zona mm (MERRA-2)' = AVERAGEX(VALUES('Distrito'[cod_distrito]), CALCULATE(SUM('Lluvia'[mm_merra2])))
+		formatString: #,0
+		displayFolder: Clima y generación
+		lineageTag: fa066373-33b8-5925-9a09-516ced762405
+
+	/// Energía generada por las plantas de Coopelesca (ARESEP).
+	measure 'Generación GWh' = DIVIDE(SUM('Generación'[kwh]), 1000000)
+		formatString: #,0.0
+		displayFolder: Clima y generación
+		lineageTag: 30e734ed-e3f7-59bc-aabb-0d80f0330fff
+
+	column _
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b6458ea7-57cc-58be-9516-997803f10b1a
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [_]
+
+	partition Medidas = calculated
+		mode: import
+		source = ROW("_", 0)
+
+	annotation PBI_Id = medidas

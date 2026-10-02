@@ -1,0 +1,112 @@
+table Continuidad
+	lineageTag: 7b52c108-124e-5675-b526-41c109491274
+
+	column id_periodo
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: f6ad2b2e-3542-5e2d-910b-5b301ee62b22
+		summarizeBy: none
+		sourceColumn: id_periodo
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_empresa
+		dataType: string
+		isHidden
+		lineageTag: 61c6d108-8e83-5271-9a98-313733166545
+		summarizeBy: none
+		sourceColumn: cod_empresa
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_circuito
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 2f4f61aa-357c-5ece-b4be-7697a99ac69f
+		summarizeBy: none
+		sourceColumn: id_circuito
+
+		annotation SummarizationSetBy = Automatic
+
+	column tipo
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 1b565842-49ad-5ee1-b217-0a283afbb2e5
+		summarizeBy: none
+		sourceColumn: tipo
+
+		annotation SummarizationSetBy = Automatic
+
+	column fpi
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		lineageTag: 5692c536-388e-59a0-8286-cbfa547527ee
+		summarizeBy: none
+		sourceColumn: fpi
+
+		annotation SummarizationSetBy = Automatic
+
+	column dpir
+		dataType: double
+		isHidden
+		formatString: #,0.00
+		lineageTag: abd6b15d-86c6-5497-b2e3-60973926639c
+		summarizeBy: none
+		sourceColumn: dpir
+
+		annotation SummarizationSetBy = Automatic
+
+	column abonados
+		dataType: int64
+		isHidden
+		formatString: #,0
+		lineageTag: c6ab31a3-e84e-5f30-b31d-bc88620556fd
+		summarizeBy: none
+		sourceColumn: abonados
+
+		annotation SummarizationSetBy = Automatic
+
+	column fpi_x_abon
+		dataType: double
+		isHidden
+		formatString: #,0
+		lineageTag: b74bfc73-659f-513a-94b8-ecd7e8862901
+		summarizeBy: none
+		sourceColumn: fpi_x_abon
+
+		annotation SummarizationSetBy = Automatic
+
+	column dpir_x_abon
+		dataType: double
+		isHidden
+		formatString: #,0
+		lineageTag: da4dbb91-6f4e-5432-bc53-63046d232282
+		summarizeBy: none
+		sourceColumn: dpir_x_abon
+
+		annotation SummarizationSetBy = Automatic
+
+	column meses
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 5dfb5b56-7760-5d36-9391-91e56681a1c7
+		summarizeBy: none
+		sourceColumn: meses
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Continuidad = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Servidor, BaseDatos),
+				    Tabla = Source{[Schema="dw",Item="fact_continuidad"]}[Data]
+				in
+				    Tabla
+
+	annotation PBI_ResultType = Table

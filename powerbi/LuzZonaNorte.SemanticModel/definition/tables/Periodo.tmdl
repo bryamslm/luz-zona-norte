@@ -1,0 +1,58 @@
+table Periodo
+	lineageTag: 8fb9cab8-532b-5549-8341-df6af636c84f
+
+	column id_periodo
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e45f4e7a-9aea-5f27-9f6b-aafccafbfdd4
+		summarizeBy: none
+		sourceColumn: id_periodo
+
+		annotation SummarizationSetBy = Automatic
+
+	column anio
+		dataType: int64
+		formatString: 0
+		lineageTag: 73ffef60-c9e7-5528-afe6-c3c3aebc9a7c
+		summarizeBy: none
+		sourceColumn: anio
+
+		annotation SummarizationSetBy = Automatic
+
+	column mes
+		dataType: int64
+		formatString: 0
+		lineageTag: 04cb8922-0537-56ea-a90a-69a0d820d21c
+		summarizeBy: none
+		sourceColumn: mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre_mes
+		dataType: string
+		lineageTag: 98377079-b71e-5369-b8ec-dc79affbb22a
+		summarizeBy: none
+		sourceColumn: nombre_mes
+
+		annotation SummarizationSetBy = Automatic
+
+	column fecha
+		dataType: dateTime
+		formatString: mmm yyyy
+		lineageTag: d0a32c31-2a38-5efc-a6c4-7076ac680d90
+		summarizeBy: none
+		sourceColumn: fecha
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Periodo = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Servidor, BaseDatos),
+				    Tabla = Source{[Schema="dw",Item="dim_periodo"]}[Data]
+				in
+				    Tabla
+
+	annotation PBI_ResultType = Table

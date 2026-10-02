@@ -1,0 +1,7 @@
+requests
+pandas
+geopandas
+pyogrio
+shapely
+pymssql
+scipy

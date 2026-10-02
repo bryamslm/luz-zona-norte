@@ -1,0 +1,19 @@
+{
+  "name": "Luz zona norte",
+  "dataColors": [
+    "#1B3A5C",
+    "#E8A317",
+    "#C1440E",
+    "#3F88C5",
+    "#7B8794",
+    "#2A9D8F",
+    "#9C6644",
+    "#B8C4CF"
+  ],
+  "background": "#F5F6F4",
+  "foreground": "#14202B",
+  "tableAccent": "#1B3A5C",
+  "maximum": "#1B3A5C",
+  "center": "#E8A317",
+  "minimum": "#E6EAEE"
+}

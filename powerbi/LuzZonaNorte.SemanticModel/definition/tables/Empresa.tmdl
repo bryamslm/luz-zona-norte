@@ -1,0 +1,38 @@
+table Empresa
+	lineageTag: 2c56db6f-29d8-5b0c-9b29-692408a61407
+
+	column cod_empresa
+		dataType: string
+		isHidden
+		lineageTag: 2be25b52-8820-584e-b5c5-563a4a638e5e
+		summarizeBy: none
+		sourceColumn: cod_empresa
+
+		annotation SummarizationSetBy = Automatic
+
+	column empresa
+		dataType: string
+		lineageTag: e3e29127-1888-5526-9996-770d8a784412
+		summarizeBy: none
+		sourceColumn: empresa
+
+		annotation SummarizationSetBy = Automatic
+
+	column razon_social
+		dataType: string
+		lineageTag: cfab0b94-1ee5-5597-a4f3-110b9616f456
+		summarizeBy: none
+		sourceColumn: razon_social
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Empresa = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Servidor, BaseDatos),
+				    Tabla = Source{[Schema="dw",Item="dim_empresa"]}[Data]
+				in
+				    Tabla
+
+	annotation PBI_ResultType = Table

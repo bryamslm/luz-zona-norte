@@ -1,0 +1,42 @@
+table 'Generación'
+	lineageTag: 4f807b62-bf13-5d97-b223-c3eb6989aa7b
+
+	column id_periodo
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: b0d67b08-cd96-5266-9f28-e0300ca4e560
+		summarizeBy: none
+		sourceColumn: id_periodo
+
+		annotation SummarizationSetBy = Automatic
+
+	column planta
+		dataType: string
+		isHidden
+		lineageTag: 7360b2e9-a473-5030-bbe2-e193e5536a15
+		summarizeBy: none
+		sourceColumn: planta
+
+		annotation SummarizationSetBy = Automatic
+
+	column kwh
+		dataType: double
+		isHidden
+		formatString: #,0
+		lineageTag: 2d16df06-6f97-5a82-8af9-459fbe69dde3
+		summarizeBy: none
+		sourceColumn: kwh
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'Generación' = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Servidor, BaseDatos),
+				    Tabla = Source{[Schema="dw",Item="fact_generacion"]}[Data]
+				in
+				    Tabla
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,53 @@
+table Lluvia
+	lineageTag: 3268786a-8ce2-5571-872e-6417d16bbb2d
+
+	column cod_distrito
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4a7471ca-6017-58bc-b2ee-8714e45d9865
+		summarizeBy: none
+		sourceColumn: cod_distrito
+
+		annotation SummarizationSetBy = Automatic
+
+	column id_periodo
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 60f058aa-e616-57df-ac61-f652e39e2e64
+		summarizeBy: none
+		sourceColumn: id_periodo
+
+		annotation SummarizationSetBy = Automatic
+
+	column mm_era5
+		dataType: double
+		isHidden
+		formatString: #,0
+		lineageTag: 30ef0910-911e-5b9e-85b5-5a7f6e50e2c2
+		summarizeBy: none
+		sourceColumn: mm_era5
+
+		annotation SummarizationSetBy = Automatic
+
+	column mm_merra2
+		dataType: double
+		isHidden
+		formatString: #,0
+		lineageTag: b3dd4bbc-ab3c-5178-b2af-f96d8c49b7d9
+		summarizeBy: none
+		sourceColumn: mm_merra2
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Lluvia = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Servidor, BaseDatos),
+				    Tabla = Source{[Schema="dw",Item="fact_lluvia"]}[Data]
+				in
+				    Tabla
+
+	annotation PBI_ResultType = Table

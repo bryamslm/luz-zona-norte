@@ -1,0 +1,67 @@
+table Circuito
+	lineageTag: 46ce9dcc-0246-5be0-8435-a88d47fee6f7
+
+	column id_circuito
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 68632e14-8f0c-5e8a-8bcb-8a5017033962
+		summarizeBy: none
+		sourceColumn: id_circuito
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_empresa
+		dataType: string
+		isHidden
+		lineageTag: 9b0738c6-f4fe-5b83-a543-330e42d77dd0
+		summarizeBy: none
+		sourceColumn: cod_empresa
+
+		annotation SummarizationSetBy = Automatic
+
+	column circuito
+		dataType: string
+		isHidden
+		lineageTag: eccb2d4c-c202-588b-bf1c-4ed32de2d319
+		summarizeBy: none
+		sourceColumn: circuito
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre
+		dataType: string
+		lineageTag: 27e99f96-d3d1-5752-b1c7-6bc6816a40a8
+		summarizeBy: none
+		sourceColumn: nombre
+
+		annotation SummarizationSetBy = Automatic
+
+	column primer_anio
+		dataType: int64
+		formatString: 0
+		lineageTag: 7d4b9ea6-315d-5aab-8a6a-2c78586d6cd7
+		summarizeBy: none
+		sourceColumn: primer_anio
+
+		annotation SummarizationSetBy = Automatic
+
+	column ultimo_anio
+		dataType: int64
+		formatString: 0
+		lineageTag: 2b453f71-3fad-5d65-b10a-0822bc1d75b8
+		summarizeBy: none
+		sourceColumn: ultimo_anio
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Circuito = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Servidor, BaseDatos),
+				    Tabla = Source{[Schema="dw",Item="dim_circuito"]}[Data]
+				in
+				    Tabla
+
+	annotation PBI_ResultType = Table

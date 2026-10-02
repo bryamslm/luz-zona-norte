@@ -1,0 +1,38 @@
+table Tipo
+	lineageTag: 6b1fff93-6bff-5827-b8d0-1a6ab6e4b3ab
+
+	column tipo
+		dataType: int64
+		formatString: 0
+		lineageTag: 36508396-6199-5fc0-bd24-52f84248b3f0
+		summarizeBy: none
+		sourceColumn: tipo
+
+		annotation SummarizationSetBy = Automatic
+
+	column nombre
+		dataType: string
+		lineageTag: 6911d3e0-6fcb-5292-8372-9bdc0724fbe6
+		summarizeBy: none
+		sourceColumn: nombre
+
+		annotation SummarizationSetBy = Automatic
+
+	column descripcion
+		dataType: string
+		lineageTag: 9e02a606-0da2-5194-84d2-013cf28c4421
+		summarizeBy: none
+		sourceColumn: descripcion
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Tipo = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Servidor, BaseDatos),
+				    Tabla = Source{[Schema="dw",Item="dim_tipo"]}[Data]
+				in
+				    Tabla
+
+	annotation PBI_ResultType = Table

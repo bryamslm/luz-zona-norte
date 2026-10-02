@@ -1,0 +1,31 @@
+relationship 60026eac-ebb0-55c5-9079-ccd4a04a45db
+	fromColumn: Continuidad.id_periodo
+	toColumn: Periodo.id_periodo
+
+relationship fbb70c70-bd3d-5dd8-8bcb-d676d2ef39be
+	fromColumn: Continuidad.cod_empresa
+	toColumn: Empresa.cod_empresa
+
+relationship 73ccd5db-45d2-563a-9889-6921eaecdc97
+	fromColumn: Continuidad.id_circuito
+	toColumn: Circuito.id_circuito
+
+relationship 083055a8-6fcc-515f-9613-9ed49e31679e
+	fromColumn: Continuidad.tipo
+	toColumn: Tipo.tipo
+
+relationship dd5f43d0-6f10-5f60-90dd-535d73387860
+	fromColumn: Lluvia.id_periodo
+	toColumn: Periodo.id_periodo
+
+relationship 99a22e32-6ff8-53d3-b46f-c92356fdc59e
+	fromColumn: Lluvia.cod_distrito
+	toColumn: Distrito.cod_distrito
+
+relationship 7a925c46-c307-53d3-a6c7-14928ef098ff
+	fromColumn: 'Generación'.id_periodo
+	toColumn: Periodo.id_periodo
+
+relationship 65b657b6-705a-5306-baeb-547efb1624bf
+	fromColumn: 'Generación'.planta
+	toColumn: Planta.planta

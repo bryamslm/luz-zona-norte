@@ -1,0 +1,30 @@
+table Planta
+	lineageTag: d7691c97-0246-544e-98d7-2a0c39ff4d2d
+
+	column planta
+		dataType: string
+		lineageTag: bebb32a0-a154-5bec-a4c7-16f9e5d05c31
+		summarizeBy: none
+		sourceColumn: planta
+
+		annotation SummarizationSetBy = Automatic
+
+	column cod_empresa
+		dataType: string
+		isHidden
+		lineageTag: 1e449759-3dce-58e9-b49d-fb4578490f8a
+		summarizeBy: none
+		sourceColumn: cod_empresa
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Planta = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(Servidor, BaseDatos),
+				    Tabla = Source{[Schema="dw",Item="dim_planta"]}[Data]
+				in
+				    Tabla
+
+	annotation PBI_ResultType = Table

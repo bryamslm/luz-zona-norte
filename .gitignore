@@ -1,0 +1,8 @@
+.env
+data/raw/
+__pycache__/
+*.pbix.bak
+
+# Power BI: cache local y preferencias de Desktop
+**/.pbi/localSettings.json
+**/.pbi/cache.abf

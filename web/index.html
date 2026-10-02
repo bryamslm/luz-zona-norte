@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Luz zona norte</title>
+<meta name="description" content="¿Dónde y cuándo se va la luz en la zona de Coopelesca, y cuánto lo explica la lluvia? Análisis con datos abiertos de ARESEP, SQL Server y Power BI.">
+<meta property="og:title" content="Luz zona norte · por qué se va la luz">
+<meta property="og:description" content="En 2024 cada abonado de Coopelesca se quedó sin luz 6,5 veces. Solo media vez fue por su propia red.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anybody:wdth,wght@50..150,500..900&family=Chivo+Mono:wght@400;500&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect x='1' y='1' width='6' height='6' fill='%23F4B400'/%3E%3Crect x='9' y='1' width='6' height='6' fill='%2326313D'/%3E%3Crect x='1' y='9' width='6' height='6' fill='%2326313D'/%3E%3Crect x='9' y='9' width='6' height='6' fill='%23F4B400'/%3E%3C/svg%3E">
+<style>
+:root{
+  --papel:#EEF1EF; --papel-2:#E3E8E5; --tinta:#1A2430; --suave:#5E6B73; --regla:#C9D1CD;
+  --luz:#F4B400; --apagon:#26313D; --lluvia:#2E78B7; --interna:#C1440E; --ice:#8A96A0;
+  --display:"Anybody",system-ui,sans-serif; --texto:"Public Sans",system-ui,sans-serif; --dato:"Chivo Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --papel:#141B22; --papel-2:#1C252E; --tinta:#E8ECEA; --suave:#9AA6AD; --regla:#2E3A44;
+  --apagon:#0B1015; --ice:#6F7B85;
+}}
+:root[data-theme="dark"]{--papel:#141B22; --papel-2:#1C252E; --tinta:#E8ECEA; --suave:#9AA6AD; --regla:#2E3A44; --apagon:#0B1015; --ice:#6F7B85}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--papel);color:var(--tinta);font:16px/1.6 var(--texto)}
+a{color:inherit;text-decoration-thickness:1px;text-underline-offset:3px}
+a:focus-visible,button:focus-visible{outline:2px solid var(--luz);outline-offset:3px}
+.envoltura{max-width:1180px;margin:0 auto;padding:0 16px}
+.dato{font-family:var(--dato);font-variant-numeric:tabular-nums}
+.cinta{border-bottom:1px solid var(--regla);font:13px/1 var(--dato)}
+.cinta .envoltura{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-top:14px;padding-bottom:14px}
+.cinta nav{display:flex;gap:18px;flex-wrap:wrap}
+.cinta a{text-decoration:none;color:var(--suave)} .cinta a:hover{color:var(--tinta)}
+.marca{display:flex;align-items:center;gap:8px;font-weight:500}
+.marca i{width:10px;height:10px;background:var(--luz);display:inline-block}
+
+/* Heroe ---------------------------------------------------------------------- */
+.heroe{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:48px;padding:56px 0 64px}
+.ceja{font:500 12px/1 var(--dato);letter-spacing:.08em;text-transform:uppercase;color:var(--suave);margin:0 0 18px}
+h1{font:800 clamp(34px,5vw,58px)/.98 var(--display);font-stretch:72%;letter-spacing:-.01em;margin:0 0 28px}
+h1 em{font-style:normal;background:linear-gradient(transparent 62%,var(--luz) 62%)}
+.recibo{border-top:2px solid var(--tinta);border-bottom:2px solid var(--tinta);padding:14px 0;font:14px/1.9 var(--dato)}
+.recibo .linea{display:flex;align-items:baseline;gap:8px}
+.recibo .linea span:first-child{white-space:nowrap}
+.recibo .linea::after{content:"";order:1;flex:1;border-bottom:1px dotted var(--regla);transform:translateY(-4px)}
+.recibo .linea b{order:2;font-weight:500}
+.recibo .sub{padding-left:18px;color:var(--suave)}
+.recibo .sub.destacada{color:var(--tinta)}
+.recibo .sub.destacada b{color:var(--interna)}
+.recibo hr{border:0;border-top:1px dashed var(--regla);margin:8px 0}
+.pie-recibo{font:12px/1.5 var(--dato);color:var(--suave);margin:12px 0 0}
+
+.tablero-cab{display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.tablero-cab p{margin:0;font-size:14px;color:var(--suave);max-width:46ch}
+.conmutador{display:inline-flex;border:1px solid var(--tinta)}
+.conmutador button{font:500 13px/1 var(--dato);background:none;color:var(--tinta);border:0;padding:9px 14px;cursor:pointer}
+.conmutador button[aria-pressed="true"]{background:var(--tinta);color:var(--papel)}
+.tablero{display:grid;grid-template-columns:minmax(84px,128px) repeat(12,minmax(0,1fr));gap:3px;font:11px/1 var(--dato)}
+.tablero .nombre{align-self:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--suave);padding-right:6px}
+.tablero .mescab{text-align:center;color:var(--suave);padding-bottom:4px}
+.celda{aspect-ratio:2.1;background:var(--apagon);position:relative;transition:background-color .5s ease}
+.celda.vacia{background:transparent;outline:1px dashed var(--regla);outline-offset:-1px}
+.celda:hover,.celda:focus-visible{outline:2px solid var(--tinta);outline-offset:1px;z-index:1}
+.leyenda{display:flex;align-items:center;gap:10px;margin-top:14px;font:12px/1 var(--dato);color:var(--suave);flex-wrap:wrap}
+.leyenda .rampa{width:150px;height:10px;background:linear-gradient(90deg,var(--luz) 0 20%,#CC9C26 20% 40%,#5B6470 40% 60%,#404B57 60% 80%,var(--apagon) 80%)}
+.globo{position:fixed;pointer-events:none;background:var(--tinta);color:var(--papel);font:12px/1.4 var(--dato);padding:8px 10px;opacity:0;transition:opacity .12s;z-index:10;max-width:240px}
+
+/* Secciones ------------------------------------------------------------------ */
+section{border-top:1px solid var(--regla);padding:64px 0}
+.seccion-cab{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:48px;margin-bottom:36px}
+h2{font:800 clamp(28px,3.6vw,42px)/1.02 var(--display);font-stretch:80%;margin:0}
+.seccion-cab p{margin:0;max-width:62ch}
+.hallazgo{font-size:19px;line-height:1.5}
+.hallazgo strong{font-weight:600}
+.nota{font-size:13px;color:var(--suave)}
+.rejilla2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px}
+.panel h3{font:600 14px/1.3 var(--texto);margin:0 0 4px}
+.panel .nota{margin:0 0 14px}
+.lienzo{position:relative;height:320px}
+
+/* Barras de causa por empresa */
+.causas{display:grid;gap:10px}
+.causa-fila{display:grid;grid-template-columns:132px minmax(0,1fr) 54px;gap:12px;align-items:center;font:13px/1 var(--dato)}
+.causa-fila.coop .etq{font-weight:500;color:var(--tinta)}
+.causa-fila .etq{color:var(--suave)}
+.pila{display:flex;height:18px;background:var(--papel-2)}
+.pila span{display:block;height:100%}
+.causa-fila.coop .pila{outline:2px solid var(--tinta);outline-offset:2px}
+.claves{display:flex;gap:18px;flex-wrap:wrap;font:12px/1 var(--dato);color:var(--suave);margin-bottom:16px}
+.claves i{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:-1px}
+
+/* Ranking de circuitos */
+.ranking{display:grid;gap:6px}
+.rank-fila{display:grid;grid-template-columns:24px 120px minmax(0,1fr) 92px;gap:12px;align-items:center;font:13px/1 var(--dato)}
+.rank-fila .n{color:var(--suave)}
+.rank-fila .barra{height:14px;background:var(--apagon)}
+.rank-fila .barra.top{background:var(--interna)}
+.rank-fila .v{text-align:right}
+.rank-fila .sub{grid-column:2/-1;color:var(--suave);font-size:11px;margin-top:-2px}
+
+.cifras{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:36px}
+.cifra{border-top:2px solid var(--tinta);padding-top:12px}
+.cifra b{display:block;font:800 40px/1 var(--display);font-stretch:70%}
+.cifra span{font-size:14px;color:var(--suave)}
+
+.cita{border-left:3px solid var(--luz);padding:4px 0 4px 18px;margin:28px 0 0;max-width:70ch}
+
+/* Metodo */
+.metodo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}
+.metodo h3{font:600 15px/1.3 var(--texto);margin:0 0 8px}
+.metodo p,.metodo li{font-size:14px;margin:0 0 8px}
+.metodo ul{padding-left:18px;margin:0}
+table.controles{width:100%;border-collapse:collapse;font:13px/1.4 var(--dato);margin-top:8px}
+table.controles th,table.controles td{text-align:left;padding:8px 8px 8px 0;border-bottom:1px solid var(--regla);vertical-align:top}
+table.controles th{color:var(--suave);font-weight:400}
+.ok{color:#2E8540}
+
+footer{border-top:2px solid var(--tinta);padding:32px 0 56px;font-size:14px}
+footer .envoltura{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.boton{display:inline-block;border:1px solid var(--tinta);padding:10px 16px;text-decoration:none;font:500 13px/1 var(--dato);margin-right:8px}
+.boton:hover{background:var(--tinta);color:var(--papel)}
+
+@media (max-width:900px){
+  .heroe,.seccion-cab,.rejilla2,.metodo{grid-template-columns:1fr;gap:28px}
+  .heroe{padding-top:36px}
+  .cifras{grid-template-columns:1fr}
+  .causa-fila{grid-template-columns:96px minmax(0,1fr) 44px}
+  .rank-fila{grid-template-columns:20px 96px minmax(0,1fr) 72px}
+  .tablero{grid-template-columns:76px repeat(12,minmax(0,1fr));gap:2px}
+  .cinta nav{display:none}
+  .recibo{font-size:13px}
+  .recibo .linea span:first-child{white-space:normal}
+}
+@media (prefers-reduced-motion:reduce){.celda{transition:none}}
+</style>
+</head>
+<body>
+<header class="cinta">
+  <div class="envoltura">
+    <span class="marca"><i></i>luz · zona norte</span>
+    <nav aria-label="Secciones">
+      <a href="#causas">Causas</a><a href="#circuitos">Circuitos</a><a href="#lluvia">Lluvia</a>
+      <a href="#generacion">Generación</a><a href="#metodo">Método</a>
+    </nav>
+  </div>
+</header>
+
+<main class="envoltura">
+  <div class="heroe">
+    <div>
+      <p class="ceja">Coopelesca · <span data-k="anio">2024</span> · datos abiertos de ARESEP</p>
+      <h1>Se fue la luz <span data-k="fpi_entero">6,5</span>&nbsp;veces. Solo <em>media vez</em> fue por su red.</h1>
+      <div class="recibo" aria-label="Interrupciones por abonado de Coopelesca">
+        <div class="linea"><span>Interrupciones por abonado</span><b class="dato" data-k="fpi_coopelesca">—</b></div>
+        <div class="linea sub"><span>por fallas del ICE</span><b class="dato" data-k="fpi_ice">—</b></div>
+        <div class="linea sub"><span>por causas externas</span><b class="dato" data-k="fpi_externas">—</b></div>
+        <div class="linea sub destacada"><span>por la red de Coopelesca</span><b class="dato" data-k="fpi_internas">—</b></div>
+        <hr>
+        <div class="linea"><span>Horas sin luz por abonado</span><b class="dato" data-k="dpir_coopelesca">—</b></div>
+        <div class="linea"><span>Promedio del país (interrupciones)</span><b class="dato" data-k="fpi_nacional">—</b></div>
+      </div>
+      <p class="pie-recibo"><span data-k="abonados">—</span> abonados en <span data-k="circuitos">—</span> circuitos. Causas externas: ambiente, actividad humana y redes ajenas, según la clasificación oficial de ARESEP.</p>
+    </div>
+
+    <div>
+      <div class="tablero-cab">
+        <p>Cada cuadro es un circuito en un mes. Encendido: casi no hubo cortes. Oscuro: muchos.</p>
+        <div class="conmutador" role="group" aria-label="Año del tablero">
+          <button type="button" data-anio="2023" aria-pressed="false">2023</button>
+          <button type="button" data-anio="2024" aria-pressed="true">2024</button>
+        </div>
+      </div>
+      <div class="tablero" id="tablero" role="img" aria-label="Interrupciones por abonado de cada circuito de Coopelesca, mes a mes"></div>
+      <div class="leyenda"><span>menos de 0,1</span><span class="rampa"></span><span>1,5 o más interrupciones por abonado en el mes</span><span>· punteado: circuito aún no existía</span></div>
+    </div>
+  </div>
+
+  <section id="causas">
+    <div class="seccion-cab">
+      <h2>La red de Coopelesca casi no falla. Falla lo de afuera.</h2>
+      <p class="hallazgo">En <span data-k="anio">2024</span>, Coopelesca tuvo <strong>la menor frecuencia de cortes por causas internas</strong> de las ocho distribuidoras del país, y desde 2021 siempre está entre las dos más bajas. Pero ese año el <strong><span data-k="pct_externas">—</span></strong> de sus interrupciones vino de causas externas, y sus cortes fueron los más largos del país.</p>
+    </div>
+    <div class="rejilla2">
+      <div class="panel">
+        <h3>Interrupciones por abonado en <span data-k="anio">2024</span>, según su causa</h3>
+        <p class="nota">Ordenadas de menos a más cortes internos.</p>
+        <div class="claves"><span><i style="background:var(--ice)"></i>ICE</span><span><i style="background:var(--apagon)"></i>Externas</span><span><i style="background:var(--interna)"></i>Internas</span></div>
+        <div class="causas" id="causas-barras"></div>
+      </div>
+      <div class="panel">
+        <h3>Coopelesca, año por año</h3>
+        <p class="nota">Interrupciones por abonado. 2020-2022 se reportaron por semestre.</p>
+        <div class="lienzo"><canvas id="g-anual" aria-label="Interrupciones por abonado de Coopelesca por año y causa"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="circuitos">
+    <div class="seccion-cab">
+      <h2>Cinco circuitos cargan con la mitad.</h2>
+      <p class="hallazgo">En <span data-k="anio">2024</span>, <strong>5 de los <span data-k="circuitos">30</span> circuitos sumaron el <span data-k="top5">—</span></strong> de todas las interrupciones de Coopelesca. El primero es <strong data-k="peor">—</strong>: sus <span data-k="peor_abon">—</span> abonados (promedio del año) se quedaron sin luz <span data-k="peor_fpi">—</span> veces cada uno.</p>
+    </div>
+    <div class="rejilla2">
+      <div class="panel">
+        <h3>Interrupciones totales por circuito, <span data-k="anio">2024</span></h3>
+        <p class="nota">Abonados × veces sin luz. Mide dónde pesa más el problema, no solo qué tan seguido falla.</p>
+        <div class="ranking" id="ranking"></div>
+      </div>
+      <div class="panel">
+        <h3>Dos meses que no cuadran</h3>
+        <p class="nota">Antes de rankear, estos valores se revisaron uno por uno.</p>
+        <div id="atipicos"></div>
+        <p class="cita">Marina, septiembre de 2023: <strong>49 interrupciones por abonado en un solo mes</strong>, con 8.025 abonados. Ese único dato sube el año de Coopelesca de <span class="dato" data-k="fpi_2023_sin_atipico">—</span> a <span class="dato" data-k="fpi_2023">—</span>. No hay forma de saber desde afuera si fue real o un error de digitación, así que se muestra con y sin él.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="lluvia">
+    <div class="seccion-cab">
+      <h2>La lluvia acompaña, pero no explica.</h2>
+      <p class="hallazgo">En la época lluviosa hay <strong><span data-k="ratio_epoca">—</span> más cortes externos</strong> que en la seca. Pero el pico llega en junio y julio, cuando empiezan las lluvias, y no en noviembre y diciembre, los meses más lluviosos. Mes a mes, la relación es moderada (ρ = <span class="dato" data-k="rho">—</span>, p = <span class="dato" data-k="p">—</span>, <span data-k="n">—</span> meses).</p>
+    </div>
+    <div class="rejilla2">
+      <div class="panel">
+        <h3>Promedio de cada mes: cortes externos y lluvia</h3>
+        <p class="nota">2019, 2023 y 2024, los años en que Coopelesca reportó mes a mes. Sin el dato atípico de Marina.</p>
+        <div class="lienzo"><canvas id="g-estacion" aria-label="Cortes externos y lluvia promedio por mes"></canvas></div>
+      </div>
+      <div class="panel">
+        <h3>Mes a mes</h3>
+        <p class="nota">Cada punto es un mes. Si la lluvia explicara los cortes, formarían una línea.</p>
+        <div class="lienzo"><canvas id="g-dispersion" aria-label="Lluvia mensual contra cortes externos"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="generacion">
+    <div class="seccion-cab">
+      <h2>Donde la lluvia sí manda: en las turbinas.</h2>
+      <p class="hallazgo">Las plantas hidroeléctricas de Coopelesca siguen a la lluvia de cerca (ρ = <span class="dato" data-k="rho_gen">—</span>, <span data-k="n_gen">—</span> meses). En 2023, el año más seco del periodo, sus tres plantas más antiguas generaron <strong><span data-k="caida_2023">—</span> menos</strong> que en 2022.</p>
+    </div>
+    <div class="panel">
+      <h3>Generación anual de Aguas Zarcas, Chocosuelas y La Esperanza, y lluvia de la zona</h3>
+      <p class="nota">Solo las tres plantas con datos completos desde 2019, para comparar años de forma justa.</p>
+      <div class="lienzo"><canvas id="g-generacion" aria-label="Generación anual y lluvia anual"></canvas></div>
+    </div>
+  </section>
+
+  <section id="metodo">
+    <div class="seccion-cab">
+      <h2>Cómo se hizo</h2>
+      <p>Todas las cifras salen de datos públicos y se pueden reproducir con el código. Antes de mostrar nada, el resultado se comparó contra la cifra oficial.</p>
+    </div>
+    <div class="metodo">
+      <div>
+        <h3>Fuentes</h3>
+        <ul>
+          <li><a href="https://aresep.go.cr/datos-abiertos/indicadores-continuidad-empresa/">ARESEP</a>: interrupciones (FPI) y duración (DPIR) por circuito, mes y causa, 2019-2024.</li>
+          <li>ARESEP: generación mensual por planta y zonas de concesión.</li>
+          <li><a href="https://open-meteo.com/">Open-Meteo</a> (ERA5): lluvia diaria en 22 distritos de la concesión.</li>
+          <li>NASA POWER (MERRA-2): solo como contraste.</li>
+          <li>IGN: límites distritales.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Controles contra cifras publicadas</h3>
+        <table class="controles">
+          <tr><th>Control</th><th>Calculado</th><th>Publicado</th></tr>
+          <tr><td>FPI nacional 2024</td><td class="ok">7,71</td><td>7,63 (ARESEP)</td></tr>
+          <tr><td>DPIR nacional 2022</td><td class="ok">8,11 h</td><td>8 h 22 min (ARESEP)</td></tr>
+          <tr><td>Lluvia anual de la zona</td><td class="ok">3.967 mm</td><td>3.172 ± 659 mm (IMN)</td></tr>
+        </table>
+      </div>
+      <div>
+        <h3>Límites</h3>
+        <p>ARESEP aún no publica 2025. Las causas externas juntan ambiente, actividad humana y redes ajenas: los datos abiertos no las separan. La lluvia viene de un reanálisis, no de estaciones. Los circuitos no traen coordenadas, así que la lluvia se mide para toda la zona.</p>
+        <p><a href="https://github.com/bryamslm/luz-zona-norte/blob/master/docs/calidad-de-datos.md">Errores encontrados en las fuentes</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="envoltura">
+    <div>Hecho por <a href="https://linkedin.com/in/bryamslm">Bryam López</a> con Python, SQL Server y Power BI. <span class="nota">Datos al <span data-k="generado">—</span>.</span></div>
+    <div><a class="boton" href="https://github.com/bryamslm/luz-zona-norte">Ver el código</a><a class="boton" href="https://linkedin.com/in/bryamslm">LinkedIn</a></div>
+  </div>
+</footer>
+<div class="globo" id="globo" role="tooltip"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const num = (v, d = 2) => v == null ? "—" : v.toLocaleString("es-CR", {minimumFractionDigits: d, maximumFractionDigits: d});
+const pct = (v, d = 0) => num(v * 100, d) + " %";
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const set = (k, v) => document.querySelectorAll(`[data-k="${k}"]`).forEach(e => e.textContent = v);
+
+// Rampa del tablero: luz (0 cortes) -> apagon (2 o mas por abonado en el mes)
+function mezcla(a, b, t) {
+  const h = s => s.replace("#", "").match(/../g).map(x => parseInt(x, 16));
+  const [x, y] = [h(a), h(b)];
+  return "rgb(" + x.map((c, i) => Math.round(c + (y[i] - c) * t)).join(",") + ")";
+}
+// Cinco escalones, como ventanas: encendida, tenue, a medias, casi apagada, apagada.
+// Cortes en interrupciones por abonado en el mes; la mediana de 2024 es 0,13.
+const ESCALONES = [[0.1, 0], [0.3, .25], [0.7, .5], [1.5, .75], [Infinity, 1]];
+function colorCelda(f) {
+  const t = ESCALONES.find(([tope]) => f < tope)[1];
+  const medio = "#5B6470";
+  return t <= .5 ? mezcla(css("--luz"), medio, t * 2) : mezcla(medio, css("--apagon"), (t - .5) * 2);
+}
+
+function tablero(datos, anio) {
+  const el = document.getElementById("tablero"), globo = document.getElementById("globo");
+  el.innerHTML = '<span></span>' + MESES.map(m => `<span class="mescab">${m}</span>`).join("");
+  datos.tablero[anio].forEach(c => {
+    el.insertAdjacentHTML("beforeend", `<span class="nombre" title="${c.circuito}">${c.circuito}</span>`);
+    c.fpi.forEach((f, i) => {
+      const d = document.createElement("span");
+      d.className = "celda" + (f == null ? " vacia" : "");
+      d.tabIndex = f == null ? -1 : 0;
+      if (f != null) d.style.backgroundColor = colorCelda(f);
+      const texto = f == null ? `${c.circuito}, ${MESES[i]} ${anio}: el circuito aún no existía`
+                              : `${c.circuito}, ${MESES[i]} ${anio}: ${num(f)} interrupciones por abonado`;
+      d.setAttribute("aria-label", texto);
+      const mostrar = e => { globo.textContent = texto; globo.style.opacity = 1;
+        const r = d.getBoundingClientRect();
+        globo.style.left = Math.min(innerWidth - 250, r.left) + "px"; globo.style.top = (r.bottom + 6) + "px"; };
+      d.addEventListener("mouseenter", mostrar); d.addEventListener("focus", mostrar);
+      d.addEventListener("mouseleave", () => globo.style.opacity = 0); d.addEventListener("blur", () => globo.style.opacity = 0);
+      el.appendChild(d);
+    });
+  });
+}
+
+function causas(datos) {
+  const filas = datos.empresas.filter(e => e.anio === datos.resumen.anio).sort((a, b) => a.fpi_internas - b.fpi_internas);
+  const max = Math.max(...filas.map(f => f.fpi_1));
+  const nombres = {COOPELESCA: "Coopelesca", COOPEGUANACASTE: "Coopeguanacaste", COOPESANTOS: "Coopesantos", COOPEALFARORUIZ: "Coopealfaroruiz"};
+  document.getElementById("causas-barras").innerHTML = filas.map(f => `
+    <div class="causa-fila ${f.empresa === "COOPELESCA" ? "coop" : ""}">
+      <span class="etq">${nombres[f.empresa] || f.empresa}</span>
+      <span class="pila" title="ICE ${num(f.fpi_ice)} · externas ${num(f.fpi_externas)} · internas ${num(f.fpi_internas)}">
+        <span style="width:${f.fpi_ice / max * 100}%;background:var(--ice)"></span>
+        <span style="width:${f.fpi_externas / max * 100}%;background:var(--apagon)"></span>
+        <span style="width:${f.fpi_internas / max * 100}%;background:var(--interna)"></span>
+      </span>
+      <span class="dato">${num(f.fpi_1)}</span>
+    </div>`).join("");
+}
+
+function ranking(datos) {
+  const c = [...datos.circuitos_2024].sort((a, b) => b.interrupciones - a.interrupciones).slice(0, 12);
+  const max = c[0].interrupciones;
+  document.getElementById("ranking").innerHTML = c.map((x, i) => `
+    <div class="rank-fila">
+      <span class="n">${i + 1}</span><span>${x.circuito}</span>
+      <span class="barra ${i < 5 ? "top" : ""}" style="width:${x.interrupciones / max * 100}%"></span>
+      <span class="v">${x.interrupciones.toLocaleString("es-CR")}</span>
+      <span class="sub">${x.abonados.toLocaleString("es-CR")} abonados · ${num(x.fpi)} veces cada uno · ${num(x.dpir, 1)} h sin luz</span>
+    </div>`).join("");
+  document.getElementById("atipicos").innerHTML = `<table class="controles">
+    <tr><th>Mes</th><th>Circuito</th><th>Interrupciones por abonado</th><th>Abonados</th></tr>
+    ${datos.atipicos.slice(0, 2).map(a => `<tr><td>${MESES[a.periodo % 100 - 1]} ${Math.floor(a.periodo / 100)}</td><td>${a.circuito}</td><td>${num(a.fpi)}</td><td>${a.abonados.toLocaleString("es-CR")}</td></tr>`).join("")}
+  </table>
+  <p class="nota">Cerro Cortés tenía 57 abonados en mayo de 2024: el circuito estaba recién energizado. Ponderado por abonados, su peso es mínimo; por eso el ranking usa interrupciones totales y no el promedio simple.</p>`;
+}
+
+function graficos(datos) {
+  Chart.defaults.font.family = css("--texto").split(",")[0].replace(/"/g, "");
+  Chart.defaults.color = css("--suave");
+  Chart.defaults.borderColor = css("--regla");
+  const coop = datos.empresas.filter(e => e.empresa === "COOPELESCA");
+  const pila = {stacked: true, grid: {display: false}};
+  new Chart(document.getElementById("g-anual"), {
+    type: "bar",
+    data: {labels: coop.map(c => c.anio), datasets: [
+      {label: "ICE", data: coop.map(c => c.fpi_ice), backgroundColor: css("--ice")},
+      {label: "Externas", data: coop.map(c => c.fpi_externas), backgroundColor: css("--apagon")},
+      {label: "Internas", data: coop.map(c => c.fpi_internas), backgroundColor: css("--interna")}]},
+    options: {maintainAspectRatio: false, scales: {x: pila, y: {stacked: true}},
+      plugins: {legend: {position: "top", align: "start"},
+                tooltip: {callbacks: {label: c => `${c.dataset.label}: ${num(c.raw)}`}}}}
+  });
+
+  const e = datos.estacionalidad;
+  new Chart(document.getElementById("g-estacion"), {
+    data: {labels: e.map(x => MESES[x.mes - 1]), datasets: [
+      {type: "bar", label: "Lluvia (mm)", data: e.map(x => x.mm), backgroundColor: css("--lluvia") + "55", yAxisID: "mm", order: 2},
+      {type: "line", label: "Cortes externos por abonado", data: e.map(x => x.fpi_externas), borderColor: css("--tinta"),
+       backgroundColor: css("--tinta"), borderWidth: 2, pointRadius: 3, yAxisID: "fpi", order: 1}]},
+    options: {maintainAspectRatio: false, scales: {
+      fpi: {position: "left", beginAtZero: true, title: {display: true, text: "cortes por abonado"}},
+      mm: {position: "right", beginAtZero: true, grid: {display: false}, title: {display: true, text: "mm"}},
+      x: {grid: {display: false}}},
+      plugins: {legend: {position: "top", align: "start"}}}
+  });
+
+  const m = datos.mensual.filter(x => x.periodo !== 202309);
+  new Chart(document.getElementById("g-dispersion"), {
+    type: "scatter",
+    data: {datasets: [{label: "Mes", data: m.map(x => ({x: x.mm, y: x.fpi_externas, p: x.periodo})),
+      backgroundColor: css("--apagon"), pointRadius: 4}]},
+    options: {maintainAspectRatio: false, scales: {
+      x: {title: {display: true, text: "lluvia del mes (mm)"}, beginAtZero: true},
+      y: {title: {display: true, text: "cortes externos por abonado"}, beginAtZero: true}},
+      plugins: {legend: {display: false}, tooltip: {callbacks: {label: c =>
+        `${MESES[c.raw.p % 100 - 1]} ${Math.floor(c.raw.p / 100)}: ${num(c.raw.x, 0)} mm, ${num(c.raw.y)}`}}}}
+  });
+
+  const g = datos.generacion.anual_fijas;
+  new Chart(document.getElementById("g-generacion"), {
+    data: {labels: g.map(x => x.anio), datasets: [
+      {type: "bar", label: "Generación (GWh)", data: g.map(x => x.gwh), backgroundColor: g.map(x => x.anio === 2023 ? css("--interna") : css("--luz")), yAxisID: "gwh", order: 2},
+      {type: "line", label: "Lluvia (mm)", data: g.map(x => x.mm), borderColor: css("--lluvia"), backgroundColor: css("--lluvia"),
+       borderWidth: 2, pointRadius: 3, yAxisID: "mm", order: 1}]},
+    options: {maintainAspectRatio: false, scales: {
+      gwh: {position: "left", beginAtZero: true, title: {display: true, text: "GWh"}},
+      mm: {position: "right", grid: {display: false}, title: {display: true, text: "mm"}},
+      x: {grid: {display: false}}},
+      plugins: {legend: {position: "top", align: "start"}}}
+  });
+}
+
+(async () => {
+  const datos = await (await fetch("datos.json", {cache: "no-cache"})).json();
+  const r = datos.resumen, co = datos.empresas.find(e => e.empresa === "COOPELESCA" && e.anio === r.anio);
+  set("anio", r.anio); set("generado", datos.generado);
+  set("fpi_entero", num(r.fpi_coopelesca, 1));
+  set("fpi_coopelesca", num(r.fpi_coopelesca)); set("fpi_ice", num(co.fpi_ice)); set("fpi_externas", num(co.fpi_externas));
+  set("fpi_internas", num(r.fpi_internas)); set("dpir_coopelesca", num(r.dpir_coopelesca, 1) + " h");
+  set("fpi_nacional", num(r.fpi_nacional)); set("abonados", r.abonados.toLocaleString("es-CR")); set("circuitos", r.circuitos);
+  set("pct_externas", pct(r.pct_externas)); set("fpi_2023", num(r.fpi_2023)); set("fpi_2023_sin_atipico", num(r.fpi_2023_sin_atipico));
+
+  const circ = [...datos.circuitos_2024].sort((a, b) => b.interrupciones - a.interrupciones);
+  const total = circ.reduce((s, c) => s + c.interrupciones, 0);
+  set("top5", pct(circ.slice(0, 5).reduce((s, c) => s + c.interrupciones, 0) / total));
+  set("peor", circ[0].circuito); set("peor_abon", circ[0].abonados.toLocaleString("es-CR")); set("peor_fpi", num(circ[0].fpi, 1));
+
+  const ep = datos.epoca;
+  set("ratio_epoca", pct(ep.lluviosa.fpi_externas / ep.seca.fpi_externas - 1));
+  const k = datos.correlacion;
+  set("rho", num(k.rho)); set("p", num(k.p, 3)); set("n", k.n); set("rho_gen", num(k.rho_generacion)); set("n_gen", k.n_generacion);
+  const gen = Object.fromEntries(datos.generacion.anual_fijas.map(x => [x.anio, x.gwh]));
+  set("caida_2023", pct(1 - gen[2023] / gen[2022]));
+
+  tablero(datos, "2024");
+  document.querySelectorAll(".conmutador button").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll(".conmutador button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    tablero(datos, b.dataset.anio);
+  }));
+  causas(datos); ranking(datos);
+  await document.fonts.ready;  // ejes con la tipografia final, sin etiquetas cortadas
+  graficos(datos);
+})();
+</script>
+</body>
+</html>

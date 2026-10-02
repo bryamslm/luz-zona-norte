@@ -1,0 +1,38 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.1.0/schema.json",
+  "name": "circuitosfuentes",
+  "position": {
+    "x": 24,
+    "y": 684,
+    "z": 9000,
+    "height": 28,
+    "width": 1232,
+    "tabOrder": 9000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Fuentes: ARESEP (indicadores de continuidad y generación por planta, datos abiertos), IGN, Open-Meteo (ERA5), NASA POWER. Pipeline y validaciones: github.com/bryamslm/luz-zona-norte",
+                    "textStyle": {
+                      "fontFamily": "Segoe UI",
+                      "fontSize": "8pt",
+                      "color": "#5C6670"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}
